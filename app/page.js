@@ -36,10 +36,9 @@ export default function HomePage() {
       <section className="hero-panel">
         <div className="hero-copy">
           <span className="hero-badge">Official Profile</span>
-          <h1>Simple profile, looks clean.</h1>
+          <h1>Simple Profile, looks clean.</h1>
           <p className="hero-description">
-            Halaman singkat untuk menghubungi saya lewat channel utama dengan
-            tampilan yang rapi, modern, dan nyaman dibuka di berbagai device.
+            
           </p>
 
           <div className="hero-pills">
