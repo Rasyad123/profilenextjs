@@ -1,97 +1,456 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
-const links = [
+const navItems = [
+  { href: "#home", label: "Home", id: "home" },
+  { href: "#about", label: "About", id: "about" },
+  { href: "#music", label: "Music", id: "music" },
+  { href: "#contact", label: "Contact", id: "contact" }
+];
 
+const stats = [
+  { value: "4", label: "Clean dashboard sections" },
+  { value: "Smooth", label: "Scroll and hover animation" },
+  { value: "Mobile", label: "Responsive layout ready" }
+];
+
+const aboutHighlights = [
+  {
+    eyebrow: "01",
+    title: "Clean identity",
+    description:
+      "First impression dibuat lebih tegas: nama, karakter visual, dan arah halaman langsung kebaca."
+  },
+  {
+    eyebrow: "02",
+    title: "Story with structure",
+    description:
+      "About tidak cuma jadi teks panjang, tapi disusun seperti cerita singkat yang enak discan."
+  },
+  {
+    eyebrow: "03",
+    title: "Responsive flow",
+    description:
+      "Jarak, ukuran, dan susunan section dibuat lebih lega supaya tidak terasa numpuk."
+  }
+];
+
+const aboutStats = [
+  { value: "Dark", label: "visual mood" },
+  { value: "Neat", label: "content flow" },
+  { value: "Soft", label: "motion style" }
+];
+
+const aboutTags = ["Personal profile", "Responsive UI", "Clean layout", "Fast contact"];
+
+const playlists = [
+  {
+    title: "Focus Mode",
+    meta: "Lo-fi / ambient",
+    description: "Vibe tenang buat fokus, ngerjain tugas, atau jaga mood tetap stabil."
+  },
+  {
+    title: "Clean Energy",
+    meta: "Pop / upbeat",
+    description: "Lagu yang ringan, bright, dan enak diputar saat butuh energi."
+  },
+  {
+    title: "Deep Mode",
+    meta: "Instrumental / cinematic",
+    description: "Pilihan yang lebih dalam buat momen fokus panjang dan serius."
+  }
+];
+
+const contactLinks = [
   {
     href: "https://wa.me/6285740751152",
     label: "WhatsApp",
     handle: "+62 857-4075-1152",
-    description: "Chat langsung untuk pertanyaan, kerja sama, atau kontak cepat.",
+    description: "Paling cepat untuk chat langsung, kerja sama, atau keperluan penting.",
     icon: <WhatsAppIcon />
   },
   {
     href: "https://instagram.com/rasyad_fajar",
     label: "Instagram",
     handle: "@rasyad_fajar",
-    description: "Update visual, aktivitas, dan konten terbaru.",
+    description: "Tempat untuk lihat update visual, aktivitas, dan vibe sehari-hari.",
     icon: <InstagramIcon />
   },
- 
   {
     href: "https://t.me/RyanNoMercy",
     label: "Telegram",
     handle: "@RyanNoMercy",
-    description: "Kontak langsung untuk pesan singkat dan cepat.",
+    description: "Alternatif komunikasi singkat yang tetap langsung dan praktis.",
     icon: <TelegramIcon />
   }
 ];
 
 export default function HomePage() {
+  const [activeSection, setActiveSection] = useState("home");
+  const [indicatorStyle, setIndicatorStyle] = useState({});
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const navRef = useRef(null);
+  const linkRefs = useRef({});
+  const hideTimerRef = useRef(null);
+
+  useEffect(() => {
+    const sections = navItems
+      .map((item) => document.getElementById(item.id))
+      .filter(Boolean);
+
+    let frame = 0;
+
+    const updateActiveSection = () => {
+      const scrollBottom = window.scrollY + window.innerHeight;
+      const pageBottom = document.documentElement.scrollHeight - 8;
+
+      if (scrollBottom >= pageBottom) {
+        setActiveSection("contact");
+        return;
+      }
+
+      const marker = 150;
+      let current = sections[0]?.id ?? "home";
+
+      sections.forEach((section) => {
+        if (section.getBoundingClientRect().top <= marker) {
+          current = section.id;
+        }
+      });
+
+      setActiveSection(current);
+    };
+
+    const handleScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateActiveSection);
+    };
+
+    updateActiveSection();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      const navElement = navRef.current;
+      const activeLink = linkRefs.current[activeSection];
+
+      if (!navElement || !activeLink) {
+        return;
+      }
+
+      const navRect = navElement.getBoundingClientRect();
+      const linkRect = activeLink.getBoundingClientRect();
+
+      setIndicatorStyle({
+        width: `${linkRect.width - 20}px`,
+        transform: `translateX(${linkRect.left - navRect.left + 10}px)`
+      });
+    };
+
+    const frame = requestAnimationFrame(updateIndicator);
+    const navElement = navRef.current;
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined" && navElement
+        ? new ResizeObserver(updateIndicator)
+        : null;
+
+    updateIndicator();
+    document.fonts?.ready?.then(updateIndicator);
+    resizeObserver?.observe(navElement);
+    window.addEventListener("resize", updateIndicator);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateIndicator);
+    };
+  }, [activeSection]);
+
+  useEffect(() => {
+    const targets = document.querySelectorAll(".reveal-up");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        rootMargin: "0px 0px -10% 0px",
+        threshold: 0.16
+      }
+    );
+
+    targets.forEach((target) => observer.observe(target));
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const hideDelay = 3000;
+
+    const isHomeStillVisible = () => {
+      const homeSection = document.getElementById("home");
+      const homeRect = homeSection?.getBoundingClientRect();
+
+      return !homeRect || homeRect.bottom > 0;
+    };
+
+    const clearHideTimer = () => {
+      window.clearTimeout(hideTimerRef.current);
+    };
+
+    const queueHide = () => {
+      clearHideTimer();
+      hideTimerRef.current = window.setTimeout(() => {
+        if (isHomeStillVisible()) {
+          setIsHeaderVisible(true);
+          return;
+        }
+
+        setIsHeaderVisible(false);
+      }, hideDelay);
+    };
+
+    const showHeader = () => {
+      setIsHeaderVisible(true);
+
+      if (isHomeStillVisible()) {
+        clearHideTimer();
+        return;
+      }
+
+      queueHide();
+    };
+
+    showHeader();
+    window.addEventListener("scroll", showHeader, { passive: true });
+    window.addEventListener("mousemove", showHeader);
+    window.addEventListener("touchstart", showHeader, { passive: true });
+    window.addEventListener("keydown", showHeader);
+    window.addEventListener("hashchange", showHeader);
+
+    return () => {
+      clearHideTimer();
+      window.removeEventListener("scroll", showHeader);
+      window.removeEventListener("mousemove", showHeader);
+      window.removeEventListener("touchstart", showHeader);
+      window.removeEventListener("keydown", showHeader);
+      window.removeEventListener("hashchange", showHeader);
+    };
+  }, []);
+
   return (
-    <main className="hero-shell">
+    <div className="dashboard-shell">
       <div className="bg-orb orb-one" aria-hidden="true" />
       <div className="bg-orb orb-two" aria-hidden="true" />
       <div className="bg-grid" aria-hidden="true" />
 
-      <section className="hero-panel">
-        <div className="hero-copy">
-          <span className="hero-badge">Official Profile</span>
-          <h1>Simple Profile, looks clean.</h1>
-          <p className="hero-description">
-            
-          </p>
+      <header className={`site-header ${isHeaderVisible ? "" : "is-hidden"}`}>
+        <a href="#home" className="brand">
+          <span className="brand-mark">RF</span>
+          <span className="brand-copy">
+            <strong>Rasyad Fajar</strong>
+            <span>Personal dashboard</span>
+          </span>
+        </a>
 
-          <div className="hero-pills">
-            <span className="hero-pill">Professional look</span>
-            <span className="hero-pill">Fast contact access</span>
-          </div>
-        </div>
-
-        <div className="hero-visual">
-          <div className="avatar-ring avatar-ring-outer" aria-hidden="true" />
-          <div className="avatar-ring avatar-ring-inner" aria-hidden="true" />
-
-          <div className="avatar-card">
-            <Image
-              src="/assets/skipper-avatar.png"
-              alt="Profile avatar"
-              width={220}
-              height={220}
-              priority
-            />
-
-            <div className="avatar-meta">
-              <span className="avatar-label">@rasyad_fajar</span>
-              <span className="avatar-status">Open for contact</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="social-list">
-          {links.map((link) => (
+        <nav ref={navRef} className="site-nav" aria-label="Primary">
+          {navItems.map((item) => (
             <a
-              key={link.href}
-              href={link.href}
-              className="social-card"
-              target="_blank"
-              rel="noreferrer"
+              key={item.href}
+              href={item.href}
+              ref={(element) => {
+                linkRefs.current[item.id] = element;
+              }}
+              className={`nav-link ${activeSection === item.id ? "is-active" : ""}`}
+              onClick={() => setActiveSection(item.id)}
             >
-              <span className="social-icon">{link.icon}</span>
-              <span className="social-copy">
-                <span className="social-title">{link.label}</span>
-                <span className="social-handle">{link.handle}</span>
-                <span className="social-description">{link.description}</span>
-              </span>
-              <span className="social-arrow" aria-hidden="true">
-                <ArrowUpRightIcon />
-              </span>
+              {item.label}
             </a>
           ))}
-        </div>
+          <span className="nav-indicator" aria-hidden="true" style={indicatorStyle} />
+        </nav>
+      </header>
 
-        <p className="footer-note">Designed to feel modern, clean, and easy to trust.</p>
-      </section>
-    </main>
+      <main className="dashboard-main">
+        <section id="home" className="panel hero-panel reveal-up is-visible">
+          <div className="hero-copy">
+            <span className="section-kicker">Home</span>
+            <h1>Dashboard profile yang rapi, smooth, dan gampang dibaca.</h1>
+            <p className="hero-description">
+              Semua bagian dibuat jelas: Home untuk kesan pertama, About untuk
+              cerita singkat, Music untuk vibe, dan Contact khusus buat jalur
+              komunikasi.
+            </p>
+
+            <div className="stat-grid">
+              {stats.map((item) => (
+                <div key={item.label} className="stat-card">
+                  <span className="stat-value">{item.value}</span>
+                  <span className="stat-label">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hero-visual">
+            <div className="avatar-aura" aria-hidden="true" />
+            <div className="avatar-orbit orbit-one" aria-hidden="true" />
+            <div className="avatar-orbit orbit-two" aria-hidden="true" />
+
+            <div className="profile-card">
+              <div className="avatar-shell">
+                <Image
+                  src="/assets/home-photo.jpg"
+                  alt="Rasyad Fajar profile photo"
+                  width={240}
+                  height={240}
+                  priority
+                />
+              </div>
+
+              <div className="profile-copy">
+                <span className="profile-name">@rasyad_fajar</span>
+                <span className="profile-status">Clean personal dashboard</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="about" className="panel about-panel about-showcase reveal-up">
+          <div className="about-media">
+            <Image
+              src="/assets/profile-photo.jpg"
+              alt="Rasyad Fajar outdoor profile photo"
+              width={960}
+              height={540}
+            />
+            <div className="about-media-caption">
+              <span>Rasyad Fajar</span>
+              <strong>Personal dashboard</strong>
+            </div>
+          </div>
+
+          <div className="about-story">
+            <span className="section-kicker">About</span>
+            <h2>Kenalan singkat yang dibuat lebih hidup.</h2>
+            <p className="section-copy">
+              Halo, saya Rasyad Fajar. Halaman ini jadi tempat buat ngenalin diri
+              dengan tampilan yang lebih clean, rapi, dan langsung mengarah ke hal
+              penting: siapa saya, vibe yang ingin ditampilkan, dan kesan yang
+              ingin ditinggalkan.
+            </p>
+
+            <div className="about-tags" aria-label="Profile qualities">
+              {aboutTags.map((tag) => (
+                <span key={tag}>{tag}</span>
+              ))}
+            </div>
+
+            <div className="about-stat-row">
+              {aboutStats.map((item) => (
+                <div key={item.label} className="about-stat">
+                  <strong>{item.value}</strong>
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="about-grid">
+            {aboutHighlights.map((item) => (
+              <article key={item.title} className="about-card">
+                <span className="about-index">{item.eyebrow}</span>
+                <div className="about-copy">
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="music" className="panel music-panel reveal-up">
+          <div className="section-head">
+            <span className="section-kicker">Music</span>
+            <h2>Playlist mood and listening vibe.</h2>
+            <p className="section-copy">
+              Bagian ini nunjukin taste musik dan mood yang biasa saya putar
+              saat fokus, santai, atau butuh energi lebih.
+            </p>
+          </div>
+
+          <div className="playlist-grid">
+            {playlists.map((item) => (
+              <article key={item.title} className="playlist-card">
+                <div className="playlist-head">
+                  <h3>{item.title}</h3>
+                  <span className="playlist-meta">
+                    <span className="music-meter" aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                    {item.meta}
+                  </span>
+                </div>
+                <p>{item.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="contact" className="panel contact-panel reveal-up">
+          <div className="section-head section-head-wide">
+            <div>
+              <span className="section-kicker">Contact</span>
+              <h2>Pilih kontak yang paling nyaman.</h2>
+            </div>
+
+            <p className="section-copy">
+              Semua channel penting ada di sini. Tinggal pilih jalur yang paling
+              nyaman buat Anda.
+            </p>
+          </div>
+
+          <div className="contact-grid">
+            {contactLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="contact-card"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="contact-icon">{link.icon}</span>
+                <span className="contact-copy">
+                  <span className="contact-title">{link.label}</span>
+                  <span className="contact-handle">{link.handle}</span>
+                  <span className="contact-description">{link.description}</span>
+                </span>
+                <span className="contact-arrow" aria-hidden="true">
+                  <ArrowUpRightIcon />
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
 
