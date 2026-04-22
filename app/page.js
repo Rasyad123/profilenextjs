@@ -87,13 +87,14 @@ const contactLinks = [
   }
 ];
 
+const blurPlaceholder =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjQnIGhlaWdodD0nMjQnIHZpZXdCb3g9JzAgMCAyNCAyNCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9J2cnIHgxPScwJyB5MT0nMCcgeDI9JzEnIHkyPScxJz48c3RvcCBzdG9wLWNvbG9yPScjMTMxNTJiJy8+PHN0b3Agb2Zmc2V0PScwLjUnIHN0b3AtY29sb3I9JyM0YzFhMmYnLz48c3RvcCBvZmZzZXQ9JzEnIHN0b3AtY29sb3I9JyMyNTI4NTUnLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0nMjQnIGhlaWdodD0nMjQnIGZpbGw9J3VybCgjZyknLz48L3N2Zz4=";
+
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState("home");
   const [indicatorStyle, setIndicatorStyle] = useState({});
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const navRef = useRef(null);
   const linkRefs = useRef({});
-  const hideTimerRef = useRef(null);
 
   useEffect(() => {
     const sections = navItems
@@ -199,67 +200,13 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const hideDelay = 3000;
-
-    const isHomeStillVisible = () => {
-      const homeSection = document.getElementById("home");
-      const homeRect = homeSection?.getBoundingClientRect();
-
-      return !homeRect || homeRect.bottom > 0;
-    };
-
-    const clearHideTimer = () => {
-      window.clearTimeout(hideTimerRef.current);
-    };
-
-    const queueHide = () => {
-      clearHideTimer();
-      hideTimerRef.current = window.setTimeout(() => {
-        if (isHomeStillVisible()) {
-          setIsHeaderVisible(true);
-          return;
-        }
-
-        setIsHeaderVisible(false);
-      }, hideDelay);
-    };
-
-    const showHeader = () => {
-      setIsHeaderVisible(true);
-
-      if (isHomeStillVisible()) {
-        clearHideTimer();
-        return;
-      }
-
-      queueHide();
-    };
-
-    showHeader();
-    window.addEventListener("scroll", showHeader, { passive: true });
-    window.addEventListener("mousemove", showHeader);
-    window.addEventListener("touchstart", showHeader, { passive: true });
-    window.addEventListener("keydown", showHeader);
-    window.addEventListener("hashchange", showHeader);
-
-    return () => {
-      clearHideTimer();
-      window.removeEventListener("scroll", showHeader);
-      window.removeEventListener("mousemove", showHeader);
-      window.removeEventListener("touchstart", showHeader);
-      window.removeEventListener("keydown", showHeader);
-      window.removeEventListener("hashchange", showHeader);
-    };
-  }, []);
-
   return (
     <div className="dashboard-shell">
       <div className="bg-orb orb-one" aria-hidden="true" />
       <div className="bg-orb orb-two" aria-hidden="true" />
       <div className="bg-grid" aria-hidden="true" />
 
-      <header className={`site-header ${isHeaderVisible ? "" : "is-hidden"}`}>
+      <header className="site-header">
         <a href="#home" className="brand">
           <span className="brand-mark">RF</span>
           <span className="brand-copy">
@@ -314,7 +261,7 @@ export default function HomePage() {
 
             <div className="profile-card">
               <div className="avatar-shell">
-                <Image
+                <BlurImage
                   src="/assets/home-photo.jpg"
                   alt="Rasyad Fajar profile photo"
                   width={240}
@@ -333,7 +280,7 @@ export default function HomePage() {
 
         <section id="about" className="panel about-panel about-showcase reveal-up">
           <div className="about-media">
-            <Image
+            <BlurImage
               src="/assets/profile-photo.jpg"
               alt="Rasyad Fajar outdoor profile photo"
               width={960}
@@ -451,6 +398,23 @@ export default function HomePage() {
         </section>
       </main>
     </div>
+  );
+}
+
+function BlurImage({ className = "", onLoad, ...props }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <Image
+      {...props}
+      className={`blur-image ${isLoaded ? "is-loaded" : ""} ${className}`.trim()}
+      placeholder="blur"
+      blurDataURL={blurPlaceholder}
+      onLoad={(event) => {
+        setIsLoaded(true);
+        onLoad?.(event);
+      }}
+    />
   );
 }
 
