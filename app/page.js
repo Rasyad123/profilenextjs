@@ -21,13 +21,13 @@ const aboutHighlights = [
     eyebrow: "01",
     title: "Clean identity",
     description:
-      "First impression dibuat lebih tegas: nama, karakter visual, dan arah halaman langsung kebaca."
+      "First impression dibuat lebih tegas: nama, karakter visual."
   },
   {
     eyebrow: "02",
     title: "Story with structure",
     description:
-      "About tidak cuma jadi teks panjang, tapi disusun seperti cerita singkat yang enak discan."
+      "disusun seperti cerita singkat yang enak discan."
   },
   {
     eyebrow: "03",
@@ -47,19 +47,34 @@ const aboutTags = ["Personal profile", "Responsive UI", "Clean layout", "Fast co
 
 const playlists = [
   {
-    title: "Focus Mode",
-    meta: "Lo-fi / ambient",
-    description: "Vibe tenang buat fokus, ngerjain tugas, atau jaga mood tetap stabil."
+    title: "Somebody's Pleasure",
+    meta: "Aziz Hedra",
+    description: "Lagu yang enak diputar pelan-pelan, cocok buat nemenin waktu santai."
   },
   {
-    title: "Clean Energy",
-    meta: "Pop / upbeat",
-    description: "Lagu yang ringan, bright, dan enak diputar saat butuh energi."
+    title: "Someone To Stay",
+    meta: "Vancouver Sleep Clinic",
+    description: "Vibes-nya kalem dan agak melankolis, pas buat mode malam."
   },
   {
-    title: "Deep Mode",
-    meta: "Instrumental / cinematic",
-    description: "Pilihan yang lebih dalam buat momen fokus panjang dan serius."
+    title: "Rewrite The Stars",
+    meta: "James Arthur, Anne-Marie",
+    description: "Salah satu lagu yang gampang kebawa suasana setiap kali diputar."
+  },
+  {
+    title: "BIRDS OF A FEATHER",
+    meta: "Billie Eilish",
+    description: "Ringan tapi tetap kena, cocok buat playlist yang diputar berulang."
+  },
+  {
+    title: "Scott Street",
+    meta: "Phoebe Bridgers",
+    description: "Lagu tenang dengan suasana yang cukup dalam buat didengar sendiri."
+  },
+  {
+    title: "End of Beginning",
+    meta: "Djo",
+    description: "Track yang punya mood nostalgia dan tetap enak buat diputar kapan saja."
   }
 ];
 
@@ -281,7 +296,7 @@ export default function HomePage() {
         <section id="home" className="panel hero-panel reveal-up is-visible">
           <div className="hero-copy">
             <span className="section-kicker">Home</span>
-            <h1>Dashboard profile yang rapi, smooth, dan gampang dibaca.</h1>
+            <h1>Dashboard Simple Profile, With Modren Clean UI.</h1>
             <p className="hero-description">
               Semua bagian dibuat jelas: Home untuk kesan pertama, About untuk
               cerita singkat, Music untuk vibe, dan Contact khusus buat jalur
@@ -338,12 +353,9 @@ export default function HomePage() {
 
           <div className="about-story">
             <span className="section-kicker">About</span>
-            <h2>Kenalan singkat yang dibuat lebih hidup.</h2>
+            <h2>Kenalan singkat yang membuat lebih hidup.</h2>
             <p className="section-copy">
-              Halo, saya Rasyad Fajar. Halaman ini jadi tempat buat ngenalin diri
-              dengan tampilan yang lebih clean, rapi, dan langsung mengarah ke hal
-              penting: siapa saya, vibe yang ingin ditampilkan, dan kesan yang
-              ingin ditinggalkan.
+              Halo, saya Rasyad Fajar. Halaman ini jadi tempat buat ngenalin diri.
             </p>
 
             <div className="about-tags" aria-label="Profile qualities">

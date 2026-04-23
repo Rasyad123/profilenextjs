@@ -993,7 +993,7 @@ a {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 699px) {
   :root {
     --dashboard-width: calc(100vw - 24px);
     --content-width: calc(100vw - 24px);
@@ -1328,10 +1328,10 @@ a {
   }
 }
 
-@media (min-width: 768px) and (max-width: 1180px) {
+@media (min-width: 700px) and (max-width: 1180px) {
   :root {
-    --dashboard-width: calc(100vw - 32px);
-    --content-width: calc(100vw - 32px);
+    --dashboard-width: min(calc(100vw - 32px), 920px);
+    --content-width: min(calc(100vw - 32px), 920px);
     --page-min-width: 0px;
   }
 
@@ -1345,7 +1345,176 @@ a {
     overflow-x: hidden;
   }
 
+  .dashboard-shell {
+    padding: 18px 16px;
+  }
+
+  .site-header {
+    width: var(--content-width);
+    padding: 8px 10px;
+    border-radius: 18px;
+  }
+
+  .site-header.is-compact {
+    width: min(462px, var(--content-width));
+  }
+
+  .dashboard-main {
+    width: var(--content-width);
+    gap: 28px;
+    padding-top: 24px;
+    padding-bottom: 120px;
+  }
+
+  .panel {
+    padding: clamp(18px, 2.4vw, 24px);
+    border-radius: 22px;
+  }
+
   .hero-panel {
-    min-height: calc(100svh - 120px);
+    min-height: auto;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.62fr);
+    gap: 24px;
+  }
+
+  .hero-copy {
+    gap: 16px;
+  }
+
+  .hero-copy h1 {
+    max-width: 13ch;
+    font-size: clamp(2.1rem, 4vw, 3rem);
+  }
+
+  .hero-description {
+    max-width: 48ch;
+    font-size: 0.9rem;
+  }
+
+  .stat-grid {
+    gap: 14px;
+  }
+
+  .stat-card {
+    min-height: 86px;
+    padding: 16px;
+  }
+
+  .hero-visual {
+    min-height: 280px;
+  }
+
+  .avatar-aura {
+    width: 240px;
+    height: 240px;
+  }
+
+  .orbit-one {
+    width: 242px;
+    height: 242px;
+  }
+
+  .orbit-two {
+    width: 198px;
+    height: 198px;
+  }
+
+  .profile-card {
+    width: min(100%, 240px);
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .about-showcase {
+    grid-template-columns: minmax(250px, 0.9fr) minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .about-media {
+    min-height: 320px;
+    border-radius: 22px;
+  }
+
+  .about-story {
+    gap: 16px;
+  }
+
+  .about-story h2 {
+    max-width: 13ch;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+  }
+
+  .about-tags span {
+    min-height: 30px;
+    padding: 7px 10px;
+    font-size: 0.7rem;
+  }
+
+  .about-stat-row {
+    gap: 10px;
+  }
+
+  .about-stat {
+    min-height: 74px;
+    padding: 12px;
+  }
+
+  .about-showcase .about-grid,
+  .music-panel .playlist-grid,
+  .contact-grid {
+    gap: 14px;
+  }
+
+  .about-showcase .about-card {
+    min-height: 128px;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .about-index {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 0.78rem;
+  }
+
+  .about-copy h3,
+  .playlist-head h3,
+  .contact-title {
+    font-size: 0.88rem;
+  }
+
+  .about-copy p,
+  .playlist-card p,
+  .contact-description {
+    font-size: 0.74rem;
+    line-height: 1.5;
+  }
+
+  .playlist-card {
+    min-height: 142px;
+    padding: 18px;
+  }
+
+  .contact-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .contact-card {
+    min-height: 124px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .contact-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+  }
+
+  .contact-arrow {
+    display: none;
   }
 }
