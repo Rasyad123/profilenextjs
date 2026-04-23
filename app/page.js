@@ -49,32 +49,38 @@ const playlists = [
   {
     title: "Somebody's Pleasure",
     meta: "Aziz Hedra",
-    description: "Lagu yang enak diputar pelan-pelan, cocok buat nemenin waktu santai."
+    description: "Lagu yang enak diputar pelan-pelan, cocok buat nemenin waktu santai.",
+    spotifyId: "3e1rs346dsDDwpqTRGlRZR"
   },
   {
     title: "Someone To Stay",
     meta: "Vancouver Sleep Clinic",
-    description: "Vibes-nya kalem dan agak melankolis, pas buat mode malam."
+    description: "Vibes-nya kalem dan agak melankolis, pas buat mode malam.",
+    spotifyId: "2xlV2CuWgpPyE9e0GquKDN"
   },
   {
     title: "Rewrite The Stars",
     meta: "James Arthur, Anne-Marie",
-    description: "Salah satu lagu yang gampang kebawa suasana setiap kali diputar."
+    description: "Salah satu lagu yang gampang kebawa suasana setiap kali diputar.",
+    spotifyId: "6mQLN3zRtAp6ovjusyYKrV"
   },
   {
     title: "BIRDS OF A FEATHER",
     meta: "Billie Eilish",
-    description: "Ringan tapi tetap kena, cocok buat playlist yang diputar berulang."
+    description: "Ringan tapi tetap kena, cocok buat playlist yang diputar berulang.",
+    spotifyId: "7D4bglfWu6vp2XzFd3o8tW"
   },
   {
     title: "Scott Street",
     meta: "Phoebe Bridgers",
-    description: "Lagu tenang dengan suasana yang cukup dalam buat didengar sendiri."
+    description: "Lagu tenang dengan suasana yang cukup dalam buat didengar sendiri.",
+    spotifyId: "6Uwi2Qk3H7fM4b4W4ExrAp"
   },
   {
     title: "End of Beginning",
     meta: "Djo",
-    description: "Track yang punya mood nostalgia dan tetap enak buat diputar kapan saja."
+    description: "Track yang punya mood nostalgia dan tetap enak buat diputar kapan saja.",
+    spotifyId: "3qhlB30KknSejmIvZZLjOD"
   }
 ];
 
@@ -109,6 +115,7 @@ export default function HomePage() {
   const [activeSection, setActiveSection] = useState("home");
   const [indicatorStyle, setIndicatorStyle] = useState({});
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [selectedTrack, setSelectedTrack] = useState(null);
   const isCompactHeader = activeSection !== "home";
   const navRef = useRef(null);
   const linkRefs = useRef({});
@@ -399,7 +406,19 @@ export default function HomePage() {
 
           <div className="playlist-grid">
             {playlists.map((item) => (
-              <article key={item.title} className="playlist-card">
+              <button
+                key={item.title}
+                type="button"
+                className={`playlist-card ${
+                  selectedTrack?.spotifyId === item.spotifyId ? "is-selected" : ""
+                }`}
+                onClick={() =>
+                  setSelectedTrack((currentTrack) =>
+                    currentTrack?.spotifyId === item.spotifyId ? null : item
+                  )
+                }
+                aria-pressed={selectedTrack?.spotifyId === item.spotifyId}
+              >
                 <div className="playlist-head">
                   <h3>{item.title}</h3>
                   <span className="playlist-meta">
@@ -412,8 +431,27 @@ export default function HomePage() {
                   </span>
                 </div>
                 <p>{item.description}</p>
-              </article>
+              </button>
             ))}
+          </div>
+
+          <div className={`spotify-player ${selectedTrack ? "is-visible" : ""}`}>
+            <div className="spotify-player-copy">
+              <span>{selectedTrack ? "Now selected" : "Player hidden"}</span>
+              <strong>{selectedTrack?.title ?? "Klik salah satu lagu"}</strong>
+              <small>{selectedTrack?.meta ?? "Klik card yang sama lagi untuk menutup player."}</small>
+            </div>
+            {selectedTrack ? (
+              <iframe
+                key={selectedTrack.spotifyId}
+                title={`${selectedTrack.title} Spotify player`}
+                src={`https://open.spotify.com/embed/track/${selectedTrack.spotifyId}?utm_source=generator&theme=0`}
+                width="100%"
+                height="152"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+              />
+            ) : null}
           </div>
         </section>
 
