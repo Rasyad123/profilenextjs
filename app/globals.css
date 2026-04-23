@@ -108,7 +108,7 @@ a {
   z-index: 30;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
   padding: 14px 18px;
   border-radius: 22px;
@@ -126,43 +126,6 @@ a {
 
 .dashboard-main {
   width: var(--dashboard-width);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
-.brand-mark {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent-red), var(--accent-violet));
-  font-size: 0.92rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-
-.brand-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.brand-copy strong {
-  font-size: 0.96rem;
-  font-weight: 700;
-}
-
-.brand-copy span {
-  color: var(--text-muted);
-  font-size: 0.78rem;
 }
 
 .site-nav {
@@ -1004,5 +967,255 @@ a {
   }
   100% {
     transform: translate3d(-26px, -22px, 0);
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --dashboard-width: calc(100vw - 24px);
+    --page-min-width: 0px;
+  }
+
+  html,
+  body,
+  .dashboard-shell {
+    min-width: 0;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .dashboard-shell {
+    padding: 12px;
+  }
+
+  .site-header {
+    top: 10px;
+    width: var(--dashboard-width);
+    gap: 10px;
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .site-nav {
+    flex: 1;
+    width: 100%;
+    justify-content: center;
+    gap: 3px;
+    padding: 4px 5px 10px;
+    overflow: hidden;
+  }
+
+  .nav-link {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 8px;
+    font-size: 0.75rem;
+  }
+
+  .dashboard-main {
+    width: var(--dashboard-width);
+    gap: 30px;
+    padding-top: 18px;
+    padding-bottom: 90px;
+  }
+
+  .panel {
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .hero-panel,
+  .about-panel,
+  .music-panel,
+  .contact-panel {
+    scroll-margin-top: 96px;
+  }
+
+  .hero-panel {
+    min-height: auto;
+    grid-template-columns: minmax(0, 1fr) clamp(104px, 29vw, 124px);
+    align-content: center;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 12px;
+  }
+
+  .hero-copy {
+    display: contents;
+  }
+
+  .hero-copy .section-kicker {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+  }
+
+  .hero-copy h1 {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: none;
+    font-size: clamp(1.32rem, 5.8vw, 1.72rem);
+    line-height: 1.05;
+    letter-spacing: -0.045em;
+  }
+
+  .hero-description {
+    grid-column: 1;
+    grid-row: 3;
+    max-width: 34ch;
+    font-size: 0.68rem;
+    line-height: 1.55;
+  }
+
+  .section-kicker {
+    padding: 7px 10px;
+    font-size: 0.66rem;
+  }
+
+  .stat-grid {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .stat-card {
+    min-height: 64px;
+    padding: 10px;
+    border-radius: 15px;
+  }
+
+  .stat-value {
+    font-size: 0.82rem;
+  }
+
+  .stat-label {
+    font-size: 0.58rem;
+    line-height: 1.35;
+  }
+
+  .hero-visual {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    min-height: 178px;
+    align-self: center;
+  }
+
+  .avatar-aura {
+    width: 150px;
+    height: 150px;
+  }
+
+  .orbit-one {
+    width: 152px;
+    height: 152px;
+  }
+
+  .orbit-two {
+    width: 124px;
+    height: 124px;
+  }
+
+  .profile-card {
+    width: clamp(104px, 29vw, 124px);
+    gap: 8px;
+    padding: 9px;
+    border-radius: 18px;
+  }
+
+  .avatar-shell {
+    border-radius: 16px;
+  }
+
+  .profile-name {
+    font-size: 0.72rem;
+  }
+
+  .profile-status {
+    font-size: 0.56rem;
+  }
+
+  .content-grid,
+  .about-showcase,
+  .section-head-wide {
+    grid-template-columns: 1fr;
+  }
+
+  .about-showcase,
+  .about-panel,
+  .music-panel,
+  .contact-panel {
+    gap: 22px;
+  }
+
+  .about-media {
+    min-height: 260px;
+  }
+
+  .about-story h2 {
+    max-width: 12ch;
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+
+  .section-head h2,
+  .contact-panel .section-head-wide h2 {
+    max-width: 14ch;
+    font-size: clamp(1.55rem, 7vw, 2.15rem);
+  }
+
+  .section-copy,
+  .about-copy p,
+  .playlist-card p,
+  .contact-description {
+    font-size: 0.82rem;
+    line-height: 1.62;
+  }
+
+  .about-stat-row,
+  .about-showcase .about-grid,
+  .music-panel .playlist-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .about-card,
+  .playlist-card,
+  .contact-card {
+    padding: 18px;
+  }
+
+  .contact-card {
+    grid-template-columns: 52px minmax(0, 1fr) 22px;
+    min-height: 120px;
+  }
+
+  .contact-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  :root {
+    --dashboard-width: calc(100vw - 32px);
+    --page-min-width: 0px;
+  }
+
+  html,
+  body,
+  .dashboard-shell {
+    min-width: 0;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .hero-panel {
+    min-height: calc(100svh - 120px);
   }
 }

@@ -11,9 +11,9 @@ const navItems = [
 ];
 
 const stats = [
-  { value: "4", label: "Clean dashboard sections" },
-  { value: "Smooth", label: "Scroll and hover animation" },
-  { value: "Mobile", label: "Responsive layout ready" }
+  { value: "4", label: "Sections" },
+  { value: "Smooth", label: "Animation" },
+  { value: "Mobile", label: "Ready layout" }
 ];
 
 const aboutHighlights = [
@@ -207,14 +207,6 @@ export default function HomePage() {
       <div className="bg-grid" aria-hidden="true" />
 
       <header className="site-header">
-        <a href="#home" className="brand">
-          <span className="brand-mark">RF</span>
-          <span className="brand-copy">
-            <strong>Rasyad Fajar</strong>
-            <span>Personal dashboard</span>
-          </span>
-        </a>
-
         <nav ref={navRef} className="site-nav" aria-label="Primary">
           {navItems.map((item) => (
             <a
