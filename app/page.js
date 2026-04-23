@@ -93,8 +93,11 @@ const blurPlaceholder =
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState("home");
   const [indicatorStyle, setIndicatorStyle] = useState({});
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const isCompactHeader = activeSection !== "home";
   const navRef = useRef(null);
   const linkRefs = useRef({});
+  const hideTimerRef = useRef(null);
 
   useEffect(() => {
     const sections = navItems
@@ -200,13 +203,62 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const clearHideTimer = () => {
+      window.clearTimeout(hideTimerRef.current);
+    };
+
+    const shouldKeepHeaderVisible = () => window.scrollY < 24;
+
+    const queueHide = () => {
+      clearHideTimer();
+
+      hideTimerRef.current = window.setTimeout(() => {
+        setIsHeaderVisible(shouldKeepHeaderVisible());
+      }, 1200);
+    };
+
+    const showThenHideWhenIdle = () => {
+      setIsHeaderVisible(true);
+
+      if (shouldKeepHeaderVisible()) {
+        clearHideTimer();
+        return;
+      }
+
+      queueHide();
+    };
+
+    showThenHideWhenIdle();
+    window.addEventListener("scroll", showThenHideWhenIdle, { passive: true });
+    window.addEventListener("wheel", showThenHideWhenIdle, { passive: true });
+    window.addEventListener("touchstart", showThenHideWhenIdle, { passive: true });
+    window.addEventListener("mousemove", showThenHideWhenIdle);
+    window.addEventListener("keydown", showThenHideWhenIdle);
+    window.addEventListener("hashchange", showThenHideWhenIdle);
+
+    return () => {
+      clearHideTimer();
+      window.removeEventListener("scroll", showThenHideWhenIdle);
+      window.removeEventListener("wheel", showThenHideWhenIdle);
+      window.removeEventListener("touchstart", showThenHideWhenIdle);
+      window.removeEventListener("mousemove", showThenHideWhenIdle);
+      window.removeEventListener("keydown", showThenHideWhenIdle);
+      window.removeEventListener("hashchange", showThenHideWhenIdle);
+    };
+  }, []);
+
   return (
     <div className="dashboard-shell">
       <div className="bg-orb orb-one" aria-hidden="true" />
       <div className="bg-orb orb-two" aria-hidden="true" />
       <div className="bg-grid" aria-hidden="true" />
 
-      <header className="site-header">
+      <header
+        className={`site-header ${isHeaderVisible ? "" : "is-hidden"} ${
+          isCompactHeader ? "is-compact" : ""
+        }`}
+      >
         <nav ref={navRef} className="site-nav" aria-label="Primary">
           {navItems.map((item) => (
             <a
