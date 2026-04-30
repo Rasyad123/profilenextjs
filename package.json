@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test": "node tests/source.test.mjs",
     "start": "NODE_ENV=production node server.js"
   },
   "dependencies": {

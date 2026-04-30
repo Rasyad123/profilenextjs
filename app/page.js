@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { introSteps, profileImages } from "./data/profile";
 
 const navItems = [
   { href: "#home", label: "Home", id: "home" },
@@ -89,21 +90,21 @@ const contactLinks = [
     href: "https://wa.me/6285740751152",
     label: "WhatsApp",
     handle: "+62 857-4075-1152",
-    description: "Paling cepat untuk chat langsung, kerja sama, atau keperluan penting.",
+    description: "Fast Respond untuk chat langsung, kerja sama, atau keperluan penting.",
     icon: <WhatsAppIcon />
   },
   {
     href: "https://instagram.com/rasyad_fajar",
     label: "Instagram",
     handle: "@rasyad_fajar",
-    description: "Tempat untuk lihat update visual, aktivitas, dan vibe sehari-hari.",
+    description: "Tempat untuk lihat update visual and my activity.",
     icon: <InstagramIcon />
   },
   {
     href: "https://t.me/RyanNoMercy",
     label: "Telegram",
     handle: "@RyanNoMercy",
-    description: "Alternatif komunikasi singkat yang tetap langsung dan praktis.",
+    description: "Komunikasi dengan privasi yang lebih aman dan nyaman.",
     icon: <TelegramIcon />
   }
 ];
@@ -116,10 +117,32 @@ export default function HomePage() {
   const [indicatorStyle, setIndicatorStyle] = useState({});
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [selectedTrack, setSelectedTrack] = useState(null);
+  const [showIntro, setShowIntro] = useState(true);
+  const [isIntroLeaving, setIsIntroLeaving] = useState(false);
   const isCompactHeader = activeSection !== "home";
   const navRef = useRef(null);
   const linkRefs = useRef({});
   const hideTimerRef = useRef(null);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const leaveTimer = window.setTimeout(() => {
+      setIsIntroLeaving(true);
+    }, 2800);
+
+    const removeTimer = window.setTimeout(() => {
+      document.body.style.overflow = originalOverflow;
+      setShowIntro(false);
+    }, 3600);
+
+    return () => {
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(removeTimer);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   useEffect(() => {
     const sections = navItems
@@ -272,6 +295,8 @@ export default function HomePage() {
 
   return (
     <div className="dashboard-shell">
+      {showIntro ? <IntroLoader isLeaving={isIntroLeaving} /> : null}
+
       <div className="bg-orb orb-one" aria-hidden="true" />
       <div className="bg-orb orb-two" aria-hidden="true" />
       <div className="bg-grid" aria-hidden="true" />
@@ -303,7 +328,7 @@ export default function HomePage() {
         <section id="home" className="panel hero-panel reveal-up is-visible">
           <div className="hero-copy">
             <span className="section-kicker">Home</span>
-            <h1>Dashboard Simple Profile, With Modren Clean UI.</h1>
+            <h1>Dashboard Simple Profile, With Modern Clean UI.</h1>
             <p className="hero-description">
               Semua bagian dibuat jelas: Home untuk kesan pertama, About untuk
               cerita singkat, Music untuk vibe, dan Contact khusus buat jalur
@@ -328,8 +353,8 @@ export default function HomePage() {
             <div className="profile-card">
               <div className="avatar-shell">
                 <BlurImage
-                  src="/assets/home-photo.jpg"
-                  alt="Rasyad Fajar profile photo"
+                  src={profileImages.homePhoto.src}
+                  alt={profileImages.homePhoto.alt}
                   width={240}
                   height={240}
                   priority
@@ -347,8 +372,8 @@ export default function HomePage() {
         <section id="about" className="panel about-panel about-showcase reveal-up">
           <div className="about-media">
             <BlurImage
-              src="/assets/profile-photo.jpg"
-              alt="Rasyad Fajar outdoor profile photo"
+              src={profileImages.profilePhoto.src}
+              alt={profileImages.profilePhoto.alt}
               width={960}
               height={540}
             />
@@ -452,6 +477,7 @@ export default function HomePage() {
                 loading="lazy"
               />
             ) : null}
+
           </div>
         </section>
 
@@ -463,8 +489,7 @@ export default function HomePage() {
             </div>
 
             <p className="section-copy">
-              Semua channel penting ada di sini. Tinggal pilih jalur yang paling
-              nyaman buat Anda.
+              All Contact Here
             </p>
           </div>
 
@@ -492,6 +517,117 @@ export default function HomePage() {
         </section>
       </main>
     </div>
+  );
+}
+
+function IntroLoader({ isLeaving }) {
+  return (
+    <div
+      className={`intro-loader ${isLeaving ? "is-leaving" : ""}`}
+      role="status"
+      aria-live="polite"
+      aria-label="Loading profile dashboard"
+    >
+      <div className="loader-grid" aria-hidden="true" />
+      <div className="loader-glow loader-glow-one" aria-hidden="true" />
+      <div className="loader-glow loader-glow-two" aria-hidden="true" />
+      <span className="loader-corner loader-corner-top" aria-hidden="true" />
+      <span className="loader-corner loader-corner-bottom" aria-hidden="true" />
+
+      {[0, 1, 2, 3, 4, 5].map((line) => (
+        <span
+          key={line}
+          className="loader-scan-line"
+          style={{
+            left: `${12 + line * 17}%`,
+            animationDelay: `${line * 0.24}s`,
+            animationDuration: `${2.5 + (line % 3) * 0.45}s`
+          }}
+          aria-hidden="true"
+        />
+      ))}
+
+      <div className="intro-loader-content">
+        <span className="loader-pill">Initializing profile</span>
+        <h2>
+          Rasyad <span>Fajar</span>
+        </h2>
+        <p>Personal Dashboard</p>
+
+        <div className="loader-step-grid">
+          {introSteps.map((step, index) => (
+            <div
+              key={step.label}
+              className="loader-step-card"
+              style={{ "--delay": `${0.55 + index * 0.12}s` }}
+            >
+              <LoaderStepIcon icon={step.icon} />
+              <strong>{step.label}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="loader-status">
+          <span>Profile system</span>
+          <span>Ready</span>
+        </div>
+        <div className="loader-progress" aria-hidden="true">
+          <span className="loader-progress-fill" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoaderStepIcon({ icon }) {
+  const icons = {
+    code: (
+      <>
+        <path d="M8 9l-4 3l4 3" />
+        <path d="M16 9l4 3l-4 3" />
+        <path d="M14 5l-4 14" />
+      </>
+    ),
+    data: (
+      <>
+        <ellipse cx="12" cy="6" rx="7" ry="3" />
+        <path d="M5 6v6c0 1.7 3.1 3 7 3s7 -1.3 7 -3v-6" />
+        <path d="M5 12v6c0 1.7 3.1 3 7 3s7 -1.3 7 -3v-6" />
+      </>
+    ),
+    cmd: (
+      <>
+        <rect x="3" y="5" width="18" height="14" rx="3" />
+        <path d="M7 10l3 2l-3 2" />
+        <path d="M12 15h5" />
+      </>
+    ),
+    palette: (
+      <>
+        <path d="M12 3a9 9 0 0 0 0 18h1.5a2.2 2.2 0 0 0 1.5 -3.8c-.7 -.6 -.2 -1.7 .7 -1.7h1.1a4.7 4.7 0 0 0 4.7 -4.7c0 -4.3 -4.1 -7.8 -9 -7.8z" />
+        <path d="M7.5 10h.01" />
+        <path d="M10 7.5h.01" />
+        <path d="M14 7.5h.01" />
+      </>
+    )
+  };
+
+  return (
+    <span className="loader-step-icon" aria-hidden="true">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {icons[icon] ?? icons.code}
+      </svg>
+    </span>
   );
 }
 
