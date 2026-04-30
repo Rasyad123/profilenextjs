@@ -90,21 +90,21 @@ const contactLinks = [
     href: "https://wa.me/6285740751152",
     label: "WhatsApp",
     handle: "+62 857-4075-1152",
-    description: "Fast Respond untuk chat langsung, kerja sama, atau keperluan penting.",
+    description: "Chat langsung buat tanya cepat, kerja sama, atau hal penting.",
     icon: <WhatsAppIcon />
   },
   {
     href: "https://instagram.com/rasyad_fajar",
     label: "Instagram",
     handle: "@rasyad_fajar",
-    description: "Tempat untuk lihat update visual and my activity.",
+    description: "Update visual, aktivitas, dan konten terbaru.",
     icon: <InstagramIcon />
   },
   {
     href: "https://t.me/RyanNoMercy",
     label: "Telegram",
     handle: "@RyanNoMercy",
-    description: "Komunikasi dengan privasi yang lebih aman dan nyaman.",
+    description: "Kontak cepat dengan ruang chat yang lebih privat.",
     icon: <TelegramIcon />
   }
 ];
@@ -489,7 +489,7 @@ export default function HomePage() {
             </div>
 
             <p className="section-copy">
-              All Contact Here
+              Pilih jalur yang paling cepat buat chat.
             </p>
           </div>
 

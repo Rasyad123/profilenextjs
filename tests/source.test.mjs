@@ -94,3 +94,14 @@ test("all image assets are registered with source data", () => {
   assert.match(pageSource, /profileImages\.homePhoto\.src/);
   assert.match(pageSource, /profileImages\.profilePhoto\.src/);
 });
+
+test("contact cards use an airy non-cramped layout", () => {
+  assert.doesNotMatch(cssSource, /repeat\(auto-fit,\s*minmax\(240px,\s*1fr\)\)/);
+  assert.match(cssSource, /\.contact-grid\s*{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/s);
+  assert.match(cssSource, /\.contact-card\s*{[^}]*display: flex/s);
+  assert.match(cssSource, /\.contact-card\s*{[^}]*flex-direction: column/s);
+  assert.doesNotMatch(cssSource, /\.contact-card\s*{[^}]*display: grid/s);
+  assert.match(cssSource, /\.contact-copy\s*{[^}]*width: 100%/s);
+  assert.match(cssSource, /\.contact-handle\s*{[^}]*overflow-wrap: anywhere/s);
+  assert.match(cssSource, /\.contact-arrow\s*{[^}]*position: absolute/s);
+});
