@@ -186,18 +186,19 @@ async function fetchPinterest(url) {
 
   const items = [];
   
-  // Jika ada video, tambahkan ke list download
-  if (videoUrl) {
-    const cleanVid = videoUrl.replace(/\\u002F/g, "/").replace(/\\\//g, "/").split(/["')\s]/)[0];
-    items.push({ label: "Download Video", url: cleanVid, ext: "mp4", quality: "HD" });
-  }
-
-  // Bersihkan sisa-sisa karakter URL gambar dan tambahkan ke list
+  // Bersihkan URL video dan gambar
+  const cleanVid = videoUrl ? videoUrl.replace(/\\u002F/g, "/").replace(/\\\//g, "/").split(/["')\s]/)[0] : null;
   let imgUrl = null;
   if (rawImg) {
     rawImg = rawImg.replace(/\\u002F/g, "/").replace(/\\\//g, "/");
     imgUrl = rawImg.split(/["')\s]/)[0];
-    // Jika dari og:image 736x, usahakan ubah ke originals untuk kualitas maksimal (opsional)
+  }
+
+  // Jika ada video, hanya sediakan tombol Download Video
+  if (cleanVid) {
+    items.push({ label: "Download Video", url: cleanVid, ext: "mp4", quality: "HD" });
+  } else if (imgUrl) {
+    // Jika tidak ada video, sediakan tombol Download Gambar
     const hiResImg = imgUrl.replace('/736x/', '/originals/').replace('/236x/', '/originals/');
     items.push({ label: "Download Gambar", url: hiResImg, ext: "jpg", quality: "Original" });
   }
