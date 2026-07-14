@@ -153,21 +153,47 @@ function buildInstagramResult(html, url) {
 }
 
 async function fetchInstagram(url) {
-  // Bypass server proxy (proxy.php) sepenuhnya karena IP cPanel diblokir oleh banyak API/Cloudflare.
-  // Gunakan public CORS proxy + itzpire (GET request) dari client-side.
-  
-  const itzpireUrl = `https://itzpire.com/download/instagram?url=${encodeURIComponent(url)}`;
-  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(itzpireUrl)}`;
+  // Gunakan metode array fallbacks untuk bypass blocker browser (seperti Brave Shields)
+  // dan bypass Cloudflare. Kita coba multiple CORS proxy dan API.
+  const encodedUrl = encodeURIComponent(url);
+  const itzpire = `https://itzpire.com/download/instagram?url=${encodedUrl}`;
+  const nxr = `https://v.i.nxr.my.id/ig?url=${encodedUrl}`;
 
-  try {
-    const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error("Gagal mengambil data dari API Instagram");
-    const html = await res.text();
-    return buildInstagramResult(html, url);
-  } catch (err) {
-    console.error(err);
-    throw new Error("Gagal menghubungi server Instagram. API sedang gangguan atau diblokir.");
+  const endpoints = [
+    `https://corsproxy.io/?${encodeURIComponent(itzpire)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(itzpire)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(itzpire)}`,
+    `https://corsproxy.io/?${encodeURIComponent(nxr)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(nxr)}`
+  ];
+
+  let lastErrorMsg = "";
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, { cache: "no-store" });
+      if (res.ok) {
+        const html = await res.text();
+        
+        // Deteksi jika API return error message JSON tapi status 200
+        if (html.includes('"status":"error"') || html.includes('"status":false') || html.includes('"status": 404')) {
+           lastErrorMsg = "Postingan bersifat private atau tidak ditemukan.";
+           continue;
+        }
+
+        try {
+          return buildInstagramResult(html, url);
+        } catch (e) {
+          lastErrorMsg = e.message;
+          continue;
+        }
+      }
+    } catch (err) {
+      console.warn("Proxy failed:", endpoint);
+    }
   }
+
+  throw new Error(lastErrorMsg || "Gagal menghubungi server. Matikan AdBlocker/Brave Shields kamu atau pastikan akun publik.");
 }
 
 async function fetchPinterest(url) {
