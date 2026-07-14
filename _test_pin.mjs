@@ -1,17 +1,14 @@
-const url = 'https://rasyad-fajar.com/proxy.php?action=proxy&url=https://pin.it/ly8SZ8jGu';
+const url = 'https://rasyad-fajar.com/proxy.php?action=proxy&url=https://pin.it/1y8SZ8jGu';
 fetch(url)
   .then(r => r.text())
   .then(t => {
-    const og = t.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
-    const orig = t.match(/"orig":\s*\{"url":"([^"]+)"/);
-    const pin = t.match(/https:\/\/i\.pinimg\.com\/originals\/[^"'\s]+/);
-    const og236 = t.match(/https:\/\/i\.pinimg\.com\/236x\/[^"'\s]+/);
-    const og736 = t.match(/https:\/\/i\.pinimg\.com\/736x\/[^"'\s]+/);
-    console.log('og:image:', og?.[1]?.substring(0,120));
-    console.log('orig:', orig?.[1]?.substring(0,120));
-    console.log('pinimg originals:', pin?.[0]?.substring(0,120));
-    console.log('pinimg 236x:', og236?.[0]?.substring(0,120));
-    console.log('pinimg 736x:', og736?.[0]?.substring(0,120));
-    console.log('html length:', t.length);
+    const vMatch = t.match(/v-766\.pinimg\.com[^"']+\.mp4/);
+    const m3u8Match = t.match(/v-766\.pinimg\.com[^"']+\.m3u8/);
+    const mMatch2 = t.match(/https:\/\/[a-zA-Z0-9-]+\.pinimg\.com\/v[a-zA-Z0-9/_-]+\.mp4/);
+    const imgs = t.match(/https:\/\/i\.pinimg\.com\/originals\/[a-zA-Z0-9/_-]+\.(?:jpg|jpeg|png|webp)/g);
+    
+    console.log('pinimg mp4:', vMatch?.[0] || mMatch2?.[0]);
+    console.log('pinimg m3u8:', m3u8Match?.[0]);
+    console.log('images:', imgs?.length, imgs?.slice(0,3));
   })
   .catch(e => console.error(e.message));

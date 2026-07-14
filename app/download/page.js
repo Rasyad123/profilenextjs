@@ -161,18 +161,37 @@ async function fetchPinterest(url) {
   if (!res.ok) throw new Error("Gagal mengambil konten Pinterest");
   const html = await res.text();
 
+  // Ekstrak URL Video (jika ada)
+  const videoMatch = html.match(/https:\/\/[a-zA-Z0-9-]+\.pinimg\.com\/[^"'\s]+\.mp4/i);
+  
+  // Ekstrak URL Gambar
   const origMatch = html.match(/"orig":\s*\{"url":"([^"]+)"/);
   const ogImgMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
-  // Perbaiki regex agar hanya mengambil URL gambar dan tidak ikut mengambil karakter sisa CSS/JSON
   const pinImgMatch = html.match(/https:\/\/i\.pinimg\.com\/originals\/[a-zA-Z0-9/_-]+\.(?:jpg|jpeg|png|webp)/i);
   const ogTitleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
 
-  let raw = origMatch?.[1] || pinImgMatch?.[0] || ogImgMatch?.[1];
-  if (!raw) throw new Error("Tidak dapat mengekstrak gambar dari Pinterest. Coba link pin langsung.");
+  let rawImg = origMatch?.[1] || pinImgMatch?.[0] || ogImgMatch?.[1];
+  const videoUrl = videoMatch?.[0];
 
-  // Bersihkan sisa-sisa karakter yang mungkin terbawa
-  raw = raw.replace(/\\u002F/g, "/").replace(/\\\//g, "/");
-  const imgUrl = raw.split(/["')\s]/)[0]; // Potong di karakter aneh pertama jika ada
+  if (!rawImg && !videoUrl) {
+    throw new Error("Tidak dapat mengekstrak media dari Pinterest. Coba link pin langsung.");
+  }
+
+  const items = [];
+  
+  // Jika ada video, tambahkan ke list download
+  if (videoUrl) {
+    const cleanVid = videoUrl.replace(/\\u002F/g, "/").replace(/\\\//g, "/").split(/["')\s]/)[0];
+    items.push({ label: "Download Video", url: cleanVid, ext: "mp4", quality: "HD" });
+  }
+
+  // Bersihkan sisa-sisa karakter URL gambar dan tambahkan ke list
+  let imgUrl = null;
+  if (rawImg) {
+    rawImg = rawImg.replace(/\\u002F/g, "/").replace(/\\\//g, "/");
+    imgUrl = rawImg.split(/["')\s]/)[0];
+    items.push({ label: "Download Gambar", url: imgUrl, ext: "jpg", quality: "Original" });
+  }
 
   const title = ogTitleMatch?.[1] || "Pinterest Pin";
 
@@ -180,8 +199,8 @@ async function fetchPinterest(url) {
     platform: "pinterest",
     title,
     author: "Pinterest",
-    thumbnail: imgUrl,
-    items: [{ label: "Download Gambar", url: imgUrl, ext: "jpg", quality: "Original" }],
+    thumbnail: imgUrl || "https://s.pinimg.com/images/favicon.png",
+    items,
   };
 }
 
