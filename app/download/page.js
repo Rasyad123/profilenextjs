@@ -22,23 +22,30 @@ function formatNum(n) {
   return String(n);
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+// Check if proxy.php is available (production cPanel with PHP)
+let _proxyAvailable = null;
+async function isProxyAvailable() {
+  if (_proxyAvailable !== null) return _proxyAvailable;
+  try {
+    const res = await fetch("/proxy.php?action=ping", { method: "HEAD" });
+    const ct = res.headers.get("content-type") || "";
+    // If content-type is JSON, PHP is executing; if text/html from Next.js, it's not
+    _proxyAvailable = res.ok && !ct.includes("text/html");
+  } catch {
+    _proxyAvailable = false;
+  }
+  return _proxyAvailable;
+}
+
 // ── API calls ───────────────────────────────────────────────────────────────
 
-async function fetchTikTok(url) {
-  const res = await fetch("https://tikwm.com/api/", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ url, web: 1, hd: 1 }),
-  });
-  if (!res.ok) throw new Error("Gagal menghubungi server TikTok");
-  const { code, data, msg } = await res.json();
-  if (code !== 0 || !data) throw new Error(msg || "Gagal mengambil video TikTok");
-
+function buildTikTokResult(data) {
   const items = [];
   if (data.hdplay) items.push({ label: "Video HD", url: data.hdplay, ext: "mp4", quality: "HD" });
   if (data.play) items.push({ label: "Video SD", url: data.play, ext: "mp4", quality: "SD" });
   if (data.music) items.push({ label: "Audio MP3", url: data.music, ext: "mp3", quality: "MP3" });
-
   return {
     platform: "tiktok",
     title: data.title || "TikTok Video",
@@ -54,19 +61,31 @@ async function fetchTikTok(url) {
   };
 }
 
-async function fetchInstagram(url) {
-  const res = await fetch("https://igram.world/api/ajaxSearch", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "X-Requested-With": "XMLHttpRequest",
-      "Referer": "https://igram.world/",
-    },
-    body: new URLSearchParams({ q: url, lang: "en" }),
-  });
-  if (!res.ok) throw new Error("Gagal menghubungi server Instagram");
-  const html = await res.text();
+async function fetchTikTok(url) {
+  const useProxy = await isProxyAvailable();
 
+  if (useProxy) {
+    // Production: proxy.php resolves full URLs server-side via curl
+    const res = await fetch(`/proxy.php?action=tiktok&url=${encodeURIComponent(url)}`);
+    if (!res.ok) throw new Error("Gagal menghubungi server TikTok");
+    const { code, data, msg } = await res.json();
+    if (code !== 0 || !data) throw new Error(msg || "Gagal mengambil video TikTok");
+    return buildTikTokResult(data);
+  }
+
+  // Localhost fallback: call tikwm directly (supports CORS)
+  const res = await fetch("https://tikwm.com/api/", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ url, web: 1, hd: 1 }),
+  });
+  if (!res.ok) throw new Error("Gagal menghubungi server TikTok");
+  const { code, data, msg } = await res.json();
+  if (code !== 0 || !data) throw new Error(msg || "Gagal mengambil video TikTok. Coba gunakan link pendek (vt.tiktok.com/...).");
+  return buildTikTokResult(data);
+}
+
+function buildInstagramResult(html, url) {
   const mediaMatches = [
     ...html.matchAll(/href=["'](https:\/\/[^"']*?\.(?:mp4|jpg|jpeg|png|webp)[^"']*?)["']/gi),
   ];
@@ -105,9 +124,38 @@ async function fetchInstagram(url) {
   };
 }
 
+async function fetchInstagram(url) {
+  const useProxy = await isProxyAvailable();
+
+  if (useProxy) {
+    // Production: PHP proxy calls igram server-side
+    const res = await fetch(`/proxy.php?action=instagram&url=${encodeURIComponent(url)}`);
+    if (!res.ok) throw new Error("Gagal menghubungi server Instagram");
+    const html = await res.text();
+    return buildInstagramResult(html, url);
+  }
+
+  // Localhost fallback: direct call to igram
+  const res = await fetch("https://igram.world/api/ajaxSearch", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Requested-With": "XMLHttpRequest",
+      "Referer": "https://igram.world/",
+    },
+    body: new URLSearchParams({ q: url, lang: "en" }),
+  });
+  if (!res.ok) throw new Error("Gagal menghubungi server Instagram");
+  const html = await res.text();
+  return buildInstagramResult(html, url);
+}
+
 async function fetchPinterest(url) {
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-  const res = await fetch(proxyUrl);
+  const useProxy = await isProxyAvailable();
+  const fetchUrl = useProxy
+    ? `/proxy.php?action=proxy&url=${encodeURIComponent(url)}`
+    : `https://corsproxy.io/?${encodeURIComponent(url)}`;
+  const res = await fetch(fetchUrl);
   if (!res.ok) throw new Error("Gagal mengambil konten Pinterest");
   const html = await res.text();
 
@@ -132,8 +180,12 @@ async function fetchPinterest(url) {
 }
 
 async function fetchYouTube(url) {
-  // cobalt.tools public API — open source, no key needed
-  const res = await fetch("https://api.cobalt.tools/", {
+  const useProxy = await isProxyAvailable();
+  const apiUrl = useProxy
+    ? `/proxy.php?action=proxy&url=${encodeURIComponent("https://api.cobalt.tools/")}`
+    : "https://api.cobalt.tools/";
+
+  const res = await fetch(apiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -146,13 +198,11 @@ async function fetchYouTube(url) {
       downloadMode: "auto",
     }),
   });
-  if (!res.ok) throw new Error("Gagal menghubungi server YouTube (cobalt)");
+  if (!res.ok) throw new Error("Gagal menghubungi server YouTube");
   const data = await res.json();
 
-  // cobalt returns status: "tunnel" | "redirect" | "picker"
   if (data.status === "error") throw new Error(data.error?.code || "Gagal mengambil video YouTube");
 
-  // Extract video ID for thumbnail
   const vidIdMatch = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
   const videoId = vidIdMatch?.[1];
   const thumbnail = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : null;
@@ -169,21 +219,9 @@ async function fetchYouTube(url) {
     });
   } else if (data.url) {
     items.push({ label: "Video 1080p", url: data.url, ext: "mp4", quality: "1080p" });
-    // Also try 720p
-    try {
-      const res2 = await fetch("https://api.cobalt.tools/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({ url, videoQuality: "720", filenameStyle: "pretty", downloadMode: "auto" }),
-      });
-      const d2 = await res2.json();
-      if (d2.url && d2.url !== data.url) {
-        items.push({ label: "Video 720p", url: d2.url, ext: "mp4", quality: "720p" });
-      }
-    } catch { /* ignore */ }
     // Audio only
     try {
-      const res3 = await fetch("https://api.cobalt.tools/", {
+      const res3 = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ url, filenameStyle: "pretty", downloadMode: "audio" }),
@@ -207,12 +245,14 @@ async function fetchYouTube(url) {
 }
 
 async function fetchFacebook(url) {
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-  const res = await fetch(proxyUrl);
+  const useProxy = await isProxyAvailable();
+  const fetchUrl = useProxy
+    ? `/proxy.php?action=proxy&url=${encodeURIComponent(url)}`
+    : `https://corsproxy.io/?${encodeURIComponent(url)}`;
+  const res = await fetch(fetchUrl);
   if (!res.ok) throw new Error("Gagal mengambil halaman Facebook");
   const html = await res.text();
 
-  // Extract HD and SD video URLs from embedded JSON in the page
   const hdRaw = html.match(/"playable_url_quality_hd":"([^"]+)"/) ||
                 html.match(/hd_src:\s*"([^"]+)"/) ||
                 html.match(/"hd_src":"([^"]+)"/);
@@ -258,8 +298,11 @@ async function fetchMedia(rawUrl) {
 
 async function triggerDownload(url, filename) {
   try {
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl);
+    const useProxy = await isProxyAvailable();
+    const dlUrl = useProxy
+      ? `/proxy.php?action=download&url=${encodeURIComponent(url)}`
+      : url;
+    const res = await fetch(dlUrl);
     if (!res.ok) throw new Error();
     const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
