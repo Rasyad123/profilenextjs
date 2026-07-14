@@ -42,15 +42,17 @@ async function isProxyAvailable() {
 // ── API calls ───────────────────────────────────────────────────────────────
 
 function buildTikTokResult(data) {
+  // tikwm returns relative URLs like /video/... — need to make them absolute
+  const fix = (u) => u && u.startsWith("/") ? `https://tikwm.com${u}` : u;
   const items = [];
-  if (data.hdplay) items.push({ label: "Video HD", url: data.hdplay, ext: "mp4", quality: "HD" });
-  if (data.play) items.push({ label: "Video SD", url: data.play, ext: "mp4", quality: "SD" });
-  if (data.music) items.push({ label: "Audio MP3", url: data.music, ext: "mp3", quality: "MP3" });
+  if (data.hdplay) items.push({ label: "Video HD", url: fix(data.hdplay), ext: "mp4", quality: "HD" });
+  if (data.play) items.push({ label: "Video SD", url: fix(data.play), ext: "mp4", quality: "SD" });
+  if (data.music) items.push({ label: "Audio MP3", url: fix(data.music), ext: "mp3", quality: "MP3" });
   return {
     platform: "tiktok",
     title: data.title || "TikTok Video",
     author: "@" + (data.author?.unique_id || data.author?.nickname || "user"),
-    thumbnail: data.cover,
+    thumbnail: fix(data.cover),
     duration: data.duration,
     stats: {
       plays: data.play_count,
