@@ -70,35 +70,50 @@ if ($action === 'instagram') {
         exit;
     }
 
-    $ch = curl_init('https://snapinsta.app/action.php');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-        'q' => $videoUrl,
-        't' => 'media',
-        'lang' => 'en'
-    ]));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/x-www-form-urlencoded',
-        'X-Requested-With: XMLHttpRequest',
-        'Origin: https://snapinsta.app',
-        'Referer: https://snapinsta.app/',
-        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    ]);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    function fetchIg($url, $apiUrl, $origin) {
+        $ch = curl_init($apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'q' => $url,
+            't' => 'media',
+            'lang' => 'en'
+        ]));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded',
+            'X-Requested-With: XMLHttpRequest',
+            "Origin: $origin",
+            "Referer: $origin/",
+            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        return [$httpCode, $response];
+    }
 
-    if ($httpCode !== 200 || !$response) {
+    // Try Snapinsta
+    list($code, $res) = fetchIg($videoUrl, 'https://snapinsta.app/action.php', 'https://snapinsta.app');
+    
+    // Fallback to SaveIG if Snapinsta fails
+    if ($code !== 200 || !$res) {
+        list($code, $res) = fetchIg($videoUrl, 'https://saveig.app/api/ajaxSearch', 'https://saveig.app');
+    }
+
+    // Fallback to igdownloader if both fail
+    if ($code !== 200 || !$res) {
+        list($code, $res) = fetchIg($videoUrl, 'https://v3.igdownloader.app/api/ajaxSearch', 'https://igdownloader.app');
+    }
+
+    if ($code !== 200 || !$res) {
         http_response_code(502);
-        echo json_encode(['error' => 'Failed to reach Instagram API via Snapinsta']);
+        echo json_encode(['error' => 'Failed to reach Instagram API via all proxies']);
         exit;
     }
 
-    // snapinsta returns HTML — wrap it in JSON or return as text
     header('Content-Type: text/html; charset=utf-8');
-    echo $response;
+    echo $res;
     exit;
 }
 
