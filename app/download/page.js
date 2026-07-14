@@ -163,13 +163,17 @@ async function fetchPinterest(url) {
 
   const origMatch = html.match(/"orig":\s*\{"url":"([^"]+)"/);
   const ogImgMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
-  const pinImgMatch = html.match(/https:\/\/i\.pinimg\.com\/originals\/[^"'\s]+/);
+  // Perbaiki regex agar hanya mengambil URL gambar dan tidak ikut mengambil karakter sisa CSS/JSON
+  const pinImgMatch = html.match(/https:\/\/i\.pinimg\.com\/originals\/[a-zA-Z0-9/_-]+\.(?:jpg|jpeg|png|webp)/i);
   const ogTitleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
 
-  const raw = origMatch?.[1] || pinImgMatch?.[0] || ogImgMatch?.[1];
+  let raw = origMatch?.[1] || pinImgMatch?.[0] || ogImgMatch?.[1];
   if (!raw) throw new Error("Tidak dapat mengekstrak gambar dari Pinterest. Coba link pin langsung.");
 
-  const imgUrl = raw.replace(/\\u002F/g, "/").replace(/\\\//g, "/");
+  // Bersihkan sisa-sisa karakter yang mungkin terbawa
+  raw = raw.replace(/\\u002F/g, "/").replace(/\\\//g, "/");
+  const imgUrl = raw.split(/["')\s]/)[0]; // Potong di karakter aneh pertama jika ada
+
   const title = ogTitleMatch?.[1] || "Pinterest Pin";
 
   return {
