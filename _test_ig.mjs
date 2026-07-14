@@ -1,3 +1,5 @@
-fetch('https://igram.world/js/app.js?id=f95b2ae60a607ddad501dbcd7cc73ddb').then(r => r.text()).then(t => {
-  console.log(t.match(/(["'])(?:\\.|[^\\])*?\1/g).filter(s => s.includes('/api/')));
+fetch('https://www.instagram.com/reel/DZjsingyA6n/embed/').then(r => r.text()).then(t => {
+  const match = t.match(/video_url\\?":\\?"(https:[^"\\]+)/);
+  if (match) console.log("VIDEO:", match[1]);
+  else console.log("NO VIDEO URL", t.substring(0, 500));
 }).catch(console.error);

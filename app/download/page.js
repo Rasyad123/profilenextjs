@@ -89,20 +89,32 @@ async function fetchTikTok(url) {
 
 function buildInstagramResult(html, url) {
   const links = [];
-  // Ekstrak semua link href dari tag <a>
-  const regex = /<a[^>]+href=["']([^"']+)["'][^>]*>/gi;
-  let match;
-  while ((match = regex.exec(html)) !== null) {
-    const u = match[1];
-    // Filter link yang valid (mengandung download endpoint, media file, atau token)
-    if (u.includes('download') || u.includes('.mp4') || u.includes('.jpg') || u.includes('scontent') || u.includes('token=')) {
-      if (!u.includes('snapinsta.app/app')) links.push(u); // ignore app promo links
-    }
-  }
 
-  // Coba juga regex lama sebagai fallback
-  const mediaMatches = [...html.matchAll(/href=["'](https:\/\/[^"']*?\.(?:mp4|jpg|jpeg|png|webp)[^"']*?)["']/gi)];
-  mediaMatches.forEach(m => links.push(m[1]));
+  // Jika response berupa JSON (contoh: dari itzpire API)
+  try {
+    const data = JSON.parse(html);
+    if (data.status === "success" && data.data) {
+      const arr = Array.isArray(data.data) ? data.data : [data.data];
+      arr.forEach(item => {
+        if (item.url) links.push(item.url);
+      });
+    }
+  } catch (e) {
+    // Ekstrak semua link href dari tag <a> (HTML fallback)
+    const regex = /<a[^>]+href=["']([^"']+)["'][^>]*>/gi;
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      const u = match[1];
+      // Filter link yang valid
+      if (u.includes('download') || u.includes('.mp4') || u.includes('.jpg') || u.includes('scontent') || u.includes('token=')) {
+        if (!u.includes('snapinsta.app/app')) links.push(u); // ignore app promo links
+      }
+    }
+
+    // Coba juga regex lama sebagai fallback
+    const mediaMatches = [...html.matchAll(/href=["'](https:\/\/[^"']*?\.(?:mp4|jpg|jpeg|png|webp)[^"']*?)["']/gi)];
+    mediaMatches.forEach(m => links.push(m[1]));
+  }
 
   if (!links.length) {
     throw new Error("Tidak dapat menemukan media. Pastikan postingan bersifat publik dan link benar.");

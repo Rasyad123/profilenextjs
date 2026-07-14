@@ -101,14 +101,14 @@ if ($action === 'instagram') {
         list($code, $res) = fetchIg($videoUrl, 'https://saveig.app/api/ajaxSearch', 'https://saveig.app');
     }
 
-    // Fallback to igdownloader if both fail
-    if ($code !== 200 || !$res) {
-        list($code, $res) = fetchIg($videoUrl, 'https://v3.igdownloader.app/api/ajaxSearch', 'https://igdownloader.app');
+    // Fallback to itzpire
+    if ($code !== 200 || !$res || strpos($res, '<title>Just a moment...</title>') !== false || strpos($res, 'Cloudflare') !== false) {
+        list($code, $res) = fetchIg($videoUrl, 'https://itzpire.com/download/instagram?url=' . urlencode($videoUrl), 'https://itzpire.com');
     }
 
     if ($code !== 200 || !$res) {
         http_response_code(502);
-        echo json_encode(['error' => 'Failed to reach Instagram API via all proxies']);
+        echo json_encode(['error' => 'Failed to reach Instagram API via all proxies', 'last_code' => $code]);
         exit;
     }
 
