@@ -153,29 +153,21 @@ function buildInstagramResult(html, url) {
 }
 
 async function fetchInstagram(url) {
-  const useProxy = await isProxyAvailable();
+  // Bypass server proxy (proxy.php) sepenuhnya karena IP cPanel diblokir oleh banyak API/Cloudflare.
+  // Gunakan public CORS proxy + itzpire (GET request) dari client-side.
+  
+  const itzpireUrl = `https://itzpire.com/download/instagram?url=${encodeURIComponent(url)}`;
+  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(itzpireUrl)}`;
 
-  if (useProxy) {
-    // Production: PHP proxy calls igram server-side
-    const res = await fetch(`/proxy.php?action=instagram&url=${encodeURIComponent(url)}`);
-    if (!res.ok) throw new Error("Gagal menghubungi server Instagram");
+  try {
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error("Gagal mengambil data dari API Instagram");
     const html = await res.text();
     return buildInstagramResult(html, url);
+  } catch (err) {
+    console.error(err);
+    throw new Error("Gagal menghubungi server Instagram. API sedang gangguan atau diblokir.");
   }
-
-  // Localhost fallback: direct call to igram
-  const res = await fetch("https://igram.world/api/ajaxSearch", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "X-Requested-With": "XMLHttpRequest",
-      "Referer": "https://igram.world/",
-    },
-    body: new URLSearchParams({ q: url, lang: "en" }),
-  });
-  if (!res.ok) throw new Error("Gagal menghubungi server Instagram");
-  const html = await res.text();
-  return buildInstagramResult(html, url);
 }
 
 async function fetchPinterest(url) {
