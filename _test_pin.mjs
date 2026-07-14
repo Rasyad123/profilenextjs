@@ -2,13 +2,13 @@ const url = 'https://rasyad-fajar.com/proxy.php?action=proxy&url=https://pin.it/
 fetch(url)
   .then(r => r.text())
   .then(t => {
-    const vMatch = t.match(/v-766\.pinimg\.com[^"']+\.mp4/);
-    const m3u8Match = t.match(/v-766\.pinimg\.com[^"']+\.m3u8/);
-    const mMatch2 = t.match(/https:\/\/[a-zA-Z0-9-]+\.pinimg\.com\/v[a-zA-Z0-9/_-]+\.mp4/);
-    const imgs = t.match(/https:\/\/i\.pinimg\.com\/originals\/[a-zA-Z0-9/_-]+\.(?:jpg|jpeg|png|webp)/g);
+    // Let's try more flexible meta matching
+    const allMeta = t.match(/<meta[^>]+image[^>]+>/gi);
+    console.log('all meta tags with image:', allMeta);
     
-    console.log('pinimg mp4:', vMatch?.[0] || mMatch2?.[0]);
-    console.log('pinimg m3u8:', m3u8Match?.[0]);
-    console.log('images:', imgs?.length, imgs?.slice(0,3));
+    // Check images again
+    const imgs = t.match(/https:\/\/i\.pinimg\.com\/originals\/[a-zA-Z0-9/_-]+\.(?:jpg|jpeg|png|webp)/g);
+    // Find the first one that is NOT the gradient (gradient is usually a specific id or maybe we can just get the last image in the array if there are multiple?)
+    console.log('images:', imgs);
   })
   .catch(e => console.error(e.message));

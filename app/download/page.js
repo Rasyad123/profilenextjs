@@ -164,13 +164,20 @@ async function fetchPinterest(url) {
   // Ekstrak URL Video (jika ada)
   const videoMatch = html.match(/https:\/\/[a-zA-Z0-9-]+\.pinimg\.com\/[^"'\s]+\.mp4/i);
   
-  // Ekstrak URL Gambar
+  // Ekstrak URL Gambar menggunakan meta og:image (lebih akurat)
+  const metaOgImage = html.match(/<meta[^>]+property="og:image"[^>]*>/i) || html.match(/<meta[^>]+name="og:image"[^>]*>/i);
+  const ogImgMatch = metaOgImage ? metaOgImage[0].match(/content="([^"]+)"/i) : null;
   const origMatch = html.match(/"orig":\s*\{"url":"([^"]+)"/);
-  const ogImgMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
-  const pinImgMatch = html.match(/https:\/\/i\.pinimg\.com\/originals\/[a-zA-Z0-9/_-]+\.(?:jpg|jpeg|png|webp)/i);
+  const pinImgMatch = html.match(/https:\/\/i\.pinimg\.com\/originals\/[a-zA-Z0-9/_-]+\.(?:jpg|jpeg|png|webp)/gi);
   const ogTitleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
 
-  let rawImg = origMatch?.[1] || pinImgMatch?.[0] || ogImgMatch?.[1];
+  // Ambil gambar fallback dari originals (abaikan yang pertama jika itu gradient placeholder 'd53b01...')
+  let fallbackImg = null;
+  if (pinImgMatch && pinImgMatch.length > 0) {
+    fallbackImg = pinImgMatch.find(img => !img.includes('d53b01')) || pinImgMatch[0];
+  }
+
+  let rawImg = ogImgMatch?.[1] || origMatch?.[1] || fallbackImg;
   const videoUrl = videoMatch?.[0];
 
   if (!rawImg && !videoUrl) {
@@ -190,7 +197,9 @@ async function fetchPinterest(url) {
   if (rawImg) {
     rawImg = rawImg.replace(/\\u002F/g, "/").replace(/\\\//g, "/");
     imgUrl = rawImg.split(/["')\s]/)[0];
-    items.push({ label: "Download Gambar", url: imgUrl, ext: "jpg", quality: "Original" });
+    // Jika dari og:image 736x, usahakan ubah ke originals untuk kualitas maksimal (opsional)
+    const hiResImg = imgUrl.replace('/736x/', '/originals/').replace('/236x/', '/originals/');
+    items.push({ label: "Download Gambar", url: hiResImg, ext: "jpg", quality: "Original" });
   }
 
   const title = ogTitleMatch?.[1] || "Pinterest Pin";
