@@ -70,18 +70,20 @@ if ($action === 'instagram') {
         exit;
     }
 
-    $ch = curl_init('https://igram.world/api/ajaxSearch');
+    $ch = curl_init('https://snapinsta.app/action.php');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
         'q' => $videoUrl,
+        't' => 'media',
         'lang' => 'en'
     ]));
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/x-www-form-urlencoded',
         'X-Requested-With: XMLHttpRequest',
-        'Referer: https://igram.world/',
-        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'Origin: https://snapinsta.app',
+        'Referer: https://snapinsta.app/',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     ]);
     curl_setopt($ch, CURLOPT_TIMEOUT, 15);
     $response = curl_exec($ch);
@@ -90,11 +92,11 @@ if ($action === 'instagram') {
 
     if ($httpCode !== 200 || !$response) {
         http_response_code(502);
-        echo json_encode(['error' => 'Failed to reach Instagram API']);
+        echo json_encode(['error' => 'Failed to reach Instagram API via Snapinsta']);
         exit;
     }
 
-    // igram returns HTML — wrap it in JSON for the frontend
+    // snapinsta returns HTML — wrap it in JSON or return as text
     header('Content-Type: text/html; charset=utf-8');
     echo $response;
     exit;

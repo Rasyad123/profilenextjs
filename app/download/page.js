@@ -88,29 +88,43 @@ async function fetchTikTok(url) {
 }
 
 function buildInstagramResult(html, url) {
-  const mediaMatches = [
-    ...html.matchAll(/href=["'](https:\/\/[^"']*?\.(?:mp4|jpg|jpeg|png|webp)[^"']*?)["']/gi),
-  ];
-  const thumbMatch = html.match(/src=["'](https:\/\/[^"']+?\.(?:jpg|jpeg|png|webp)[^"']*?)["']/i);
+  const links = [];
+  // Ekstrak semua link href dari tag <a>
+  const regex = /<a[^>]+href=["']([^"']+)["'][^>]*>/gi;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    const u = match[1];
+    // Filter link yang valid (mengandung download endpoint, media file, atau token)
+    if (u.includes('download') || u.includes('.mp4') || u.includes('.jpg') || u.includes('scontent') || u.includes('token=')) {
+      if (!u.includes('snapinsta.app/app')) links.push(u); // ignore app promo links
+    }
+  }
 
-  if (!mediaMatches.length) {
+  // Coba juga regex lama sebagai fallback
+  const mediaMatches = [...html.matchAll(/href=["'](https:\/\/[^"']*?\.(?:mp4|jpg|jpeg|png|webp)[^"']*?)["']/gi)];
+  mediaMatches.forEach(m => links.push(m[1]));
+
+  if (!links.length) {
     throw new Error("Tidak dapat menemukan media. Pastikan postingan bersifat publik dan link benar.");
   }
 
+  const thumbMatch = html.match(/src=["'](https:\/\/[^"']+?\.(?:jpg|jpeg|png|webp)[^"']*?)["']/i);
+
   const seen = new Set();
-  const items = mediaMatches
-    .map((m) => m[1])
+  const items = links
     .filter((u) => {
-      if (seen.has(u)) return false;
-      seen.add(u);
+      // Bersihkan url dari escaped chars
+      const cleanU = u.replace(/&amp;/g, '&');
+      if (seen.has(cleanU) || cleanU.startsWith('#')) return false;
+      seen.add(cleanU);
       return true;
     })
     .slice(0, 6)
     .map((u, i) => {
-      const isVideo = u.includes(".mp4");
+      const isVideo = u.includes(".mp4") || u.includes("video") || u.includes("type=mp4");
       return {
-        label: isVideo ? `Video ${i + 1}` : `Gambar ${i + 1}`,
-        url: u,
+        label: isVideo ? `Video ${i + 1}` : `Media ${i + 1}`,
+        url: u.replace(/&amp;/g, '&'),
         ext: isVideo ? "mp4" : "jpg",
         quality: "Original",
       };
