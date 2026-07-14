@@ -31,8 +31,8 @@ async function isProxyAvailable() {
   try {
     const res = await fetch("/proxy.php?action=ping", { method: "HEAD" });
     const ct = res.headers.get("content-type") || "";
-    // If content-type is JSON, PHP is executing; if text/html from Next.js, it's not
-    _proxyAvailable = res.ok && !ct.includes("text/html");
+    // If content-type is JSON, PHP is executing (even if it returns 400 for invalid action)
+    _proxyAvailable = ct.includes("application/json");
   } catch {
     _proxyAvailable = false;
   }
